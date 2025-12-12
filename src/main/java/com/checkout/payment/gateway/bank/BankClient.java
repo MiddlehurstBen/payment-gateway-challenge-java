@@ -53,9 +53,19 @@ public class BankClient {
       errorResponse.setHttpStatusCode(503);
       errorResponse.setAuthorized(false);
       return errorResponse;
+    } catch (org.springframework.web.client.ResourceAccessException e) {
+      // Connection refused, timeout, or network error - bank is not reachable
+      LOG.error("Unable to reach bank service (connection error)", e);
+      BankResponse errorResponse = new BankResponse();
+      errorResponse.setHttpStatusCode(503);
+      errorResponse.setAuthorized(false);
+      return errorResponse;
     } catch (Exception e) {
-      LOG.error("Error calling bank simulator", e);
-      throw new RuntimeException("Failed to process payment with bank", e);
+      LOG.error("Unexpected error calling bank simulator", e);
+      BankResponse errorResponse = new BankResponse();
+      errorResponse.setHttpStatusCode(503);
+      errorResponse.setAuthorized(false);
+      return errorResponse;
     }
   }
 }
