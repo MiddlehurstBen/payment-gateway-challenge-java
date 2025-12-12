@@ -5,22 +5,29 @@ import java.io.Serializable;
 
 public class PostPaymentRequest implements Serializable {
 
-  @JsonProperty("card_number_last_four")
-  private int cardNumberLastFour;
-  @JsonProperty("expiry_month")
+  @JsonProperty(value = "card_number", required = true)
+  private String cardNumber;
+  @JsonProperty(value = "expiry_month", required = true)
   private int expiryMonth;
-  @JsonProperty("expiry_year")
+  @JsonProperty(value = "expiry_year", required = true)
   private int expiryYear;
+  @JsonProperty(value = "expiry_date")
+  public String getExpiryDate() {
+    return String.format("%02d/%d", expiryMonth, expiryYear);
+  }
+  @JsonProperty(value = "currency", required = true)
   private String currency;
-  private int amount;
-  private int cvv;
+  @JsonProperty(value = "amount", required = true)
+  private Integer amount;
+  @JsonProperty(value = "cvv", required = true)
+  private String cvv;
 
-  public int getCardNumberLastFour() {
-    return cardNumberLastFour;
+  public String getCardNumber() {
+    return cardNumber;
   }
 
-  public void setCardNumberLastFour(int cardNumberLastFour) {
-    this.cardNumberLastFour = cardNumberLastFour;
+  public void setCardNumber(String cardNumber) {
+    this.cardNumber = cardNumber;
   }
 
   public int getExpiryMonth() {
@@ -47,31 +54,28 @@ public class PostPaymentRequest implements Serializable {
     this.currency = currency;
   }
 
-  public int getAmount() {
+  public Integer getAmount() {
     return amount;
   }
 
-  public void setAmount(int amount) {
+  public void setAmount(Integer amount) {
     this.amount = amount;
   }
 
-  public int getCvv() {
+  public String getCvv() {
     return cvv;
   }
 
-  public void setCvv(int cvv) {
+  public void setCvv(String cvv) {
     this.cvv = cvv;
   }
 
-  @JsonProperty("expiry_date")
-  public String getExpiryDate() {
-    return String.format("%d/%d", expiryMonth, expiryYear);
-  }
+
 
   @Override
   public String toString() {
     return "PostPaymentRequest{" +
-        "cardNumberLastFour=" + cardNumberLastFour +
+        "cardNumberLastFour=" + cardNumber +
         ", expiryMonth=" + expiryMonth +
         ", expiryYear=" + expiryYear +
         ", currency='" + currency + '\'' +

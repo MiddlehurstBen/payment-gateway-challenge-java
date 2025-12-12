@@ -16,6 +16,16 @@ public class CommonExceptionHandler {
   @ExceptionHandler(EventProcessingException.class)
   public ResponseEntity<ErrorResponse> handleException(EventProcessingException ex) {
     LOG.error("Exception happened", ex);
+    
+    // Check if it's a validation failure or bank error (400) vs not found (404)
+    if (ex.getMessage() != null && 
+        (ex.getMessage().contains("Validation failed") || 
+         ex.getMessage().contains("Bank service unavailable") ||
+         ex.getMessage().contains("Bank processing failed"))) {
+      return new ResponseEntity<>(new ErrorResponse(ex.getMessage()),
+          HttpStatus.BAD_REQUEST);
+    }
+    
     return new ResponseEntity<>(new ErrorResponse("Page not found"),
         HttpStatus.NOT_FOUND);
   }
