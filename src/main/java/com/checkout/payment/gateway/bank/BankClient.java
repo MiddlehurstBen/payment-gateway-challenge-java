@@ -14,19 +14,20 @@ import org.springframework.web.client.RestTemplate;
 @Component
 public class BankClient {
 
+  public static final String PAYMENTS = "/payments";
   private static final Logger LOG = LoggerFactory.getLogger(BankClient.class);
 
   private final RestTemplate restTemplate;
   private final String bankUrl;
 
-  public BankClient(RestTemplate restTemplate, 
-                    @Value("${bank.simulator.url:http://localhost:8080}") String bankUrl) {
+  public BankClient(RestTemplate restTemplate,
+      @Value("${bank.simulator.url:http://localhost:8080}") String bankUrl) {
     this.restTemplate = restTemplate;
     this.bankUrl = bankUrl;
   }
 
   public BankResponse processPayment(PostPaymentRequest request) {
-    String url = bankUrl + "/payments";
+    String url = bankUrl + PAYMENTS;
 
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
@@ -35,7 +36,8 @@ public class BankClient {
     LOG.info("Calling bank simulator at: {}", url);
 
     try {
-      ResponseEntity<BankResponse> response = restTemplate.postForEntity(url, entity, BankResponse.class);
+      ResponseEntity<BankResponse> response = restTemplate.postForEntity(url, entity,
+          BankResponse.class);
       BankResponse bankResponse = response.getBody();
 
       LOG.info("Bank response - Status: {}, Authorized: {}",
@@ -50,12 +52,28 @@ public class BankClient {
     } catch (org.springframework.web.client.HttpServerErrorException.ServiceUnavailable e) {
       LOG.error("Bank service unavailable (503)", e);
       BankResponse errorResponse = new BankResponse();
+
       errorResponse.setHttpStatusCode(503);
       errorResponse.setAuthorized(false);
+
+      return errorResponse;
+    } catch (org.springframework.web.client.ResourceAccessException e) {
+
+      LOG.error("Unable to reach bank service (connection error)", e);
+      BankResponse errorResponse = new BankResponse();
+
+      errorResponse.setHttpStatusCode(503);
+      errorResponse.setAuthorized(false);
+
       return errorResponse;
     } catch (Exception e) {
-      LOG.error("Error calling bank simulator", e);
-      throw new RuntimeException("Failed to process payment with bank", e);
+      LOG.error("Unexpected error calling bank simulator", e);
+      BankResponse errorResponse = new BankResponse();
+
+      errorResponse.setHttpStatusCode(503);
+      errorResponse.setAuthorized(false);
+
+      return errorResponse;
     }
   }
 }

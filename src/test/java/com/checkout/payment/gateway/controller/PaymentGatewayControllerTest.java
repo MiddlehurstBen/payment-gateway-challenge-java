@@ -4,15 +4,21 @@ package com.checkout.payment.gateway.controller;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.hamcrest.Matchers.matchesPattern;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
+import com.checkout.payment.gateway.bank.BankClient;
+import com.checkout.payment.gateway.bank.BankResponse;
 import com.checkout.payment.gateway.enums.PaymentStatus;
-import com.checkout.payment.gateway.model.PostPaymentResponse;
+import com.checkout.payment.gateway.model.PaymentResponse;
 import com.checkout.payment.gateway.repository.PaymentsRepository;
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -26,10 +32,39 @@ class PaymentGatewayControllerTest {
   private MockMvc mvc;
   @Autowired
   PaymentsRepository paymentsRepository;
+  @MockBean
+  BankClient bankClient;
+
+  @BeforeEach
+  void setUp() {
+    when(bankClient.processPayment(any())).thenAnswer(invocation -> {
+      var request = invocation.getArgument(0, com.checkout.payment.gateway.model.PostPaymentRequest.class);
+
+      String cardNumber = request.getCardNumber();
+      int lastDigit = Character.getNumericValue(cardNumber.charAt(cardNumber.length() - 1));
+      
+      BankResponse response = new BankResponse();
+      
+      if (lastDigit == 0) {
+
+        response.setHttpStatusCode(503);
+        response.setAuthorized(false);
+      } else if (lastDigit % 2 == 1) {
+
+        response.setHttpStatusCode(200);
+        response.setAuthorized(true);
+      } else {
+        response.setHttpStatusCode(200);
+        response.setAuthorized(false);
+      }
+      
+      return response;
+    });
+  }
 
   @Test
   void whenPaymentWithIdExistThenCorrectPaymentIsReturned() throws Exception {
-    PostPaymentResponse payment = new PostPaymentResponse();
+    PaymentResponse payment = new PaymentResponse();
     payment.setId(UUID.randomUUID());
     payment.setAmount(10);
     payment.setCurrency("USD");
@@ -126,7 +161,7 @@ class PaymentGatewayControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .content(invalidPaymentRequest))
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.message").value(matchesPattern(".*Card number must be between 14 and 19 digits long.*")));
+        .andExpect(jsonPath("$.message").value(matchesPattern(".*Card number must be at least 14 digits long and at most 19 digits long.*")));
   }
 
   @Test
@@ -205,7 +240,7 @@ class PaymentGatewayControllerTest {
     mvc.perform(MockMvcRequestBuilders.post("/payments")
             .contentType(MediaType.APPLICATION_JSON)
             .content(paymentRequestWithCardEndingInZero))
-        .andExpect(status().isBadRequest())
+        .andExpect(status().isServiceUnavailable())
         .andExpect(jsonPath("$.message").value(matchesPattern(".*Bank service unavailable.*")));
   }
 }
