@@ -45,13 +45,17 @@ public class PaymentGatewayService {
     BankResponse bankResponse = bankClient.processPayment(paymentRequest);
 
     if (bankResponse.getHttpStatusCode() == 200) {
+
       PaymentResponse response = populatePaymentResponse(paymentId, bankResponse, paymentRequest);
       paymentsRepository.add(response);
+
       return response;
     } else if (bankResponse.getHttpStatusCode() == 503) {
+
       LOG.error("Bank service unavailable for payment ID {}", paymentId);
       throw new EventProcessingException("Bank service unavailable");
     } else {
+
       LOG.error("Bank processing failed for payment ID {}", paymentId);
       throw new EventProcessingException("Bank processing failed");
     }

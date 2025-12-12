@@ -6,6 +6,9 @@ import com.checkout.payment.gateway.model.PostPaymentRequest;
 public class RequestValidator {
 
 
+  public static final int MAX_CARD_LENGTH = 19;
+  public static final int MIN_CARD_LENGTH = 14;
+
   public static void validateRequest(PostPaymentRequest request) {
     validateCardNumber(request.getCardNumber());
     validateExpiryDate(request.getExpiryDate());
@@ -23,8 +26,8 @@ public class RequestValidator {
       throw new IllegalArgumentException("Card number must contain only numeric characters");
     }
 
-    if (cardNumber.length() < 14 || cardNumber.length() > 19) {
-      throw new IllegalArgumentException("Card number must be between 14 and 19 digits long");
+    if (cardNumber.length() < MIN_CARD_LENGTH || cardNumber.length() > MAX_CARD_LENGTH) {
+      throw new IllegalArgumentException("Card number must be at least " + MIN_CARD_LENGTH + " digits long and at most " + MAX_CARD_LENGTH + " digits long");
     }
   }
 
@@ -65,15 +68,11 @@ public class RequestValidator {
     try {
       CurrencyCodes.valueOf(currency);
     } catch (IllegalArgumentException e) {
-      throw new IllegalArgumentException("Currency code is not supported. Supported currencies: GBP, USD, EUR");
+      throw new IllegalArgumentException("Currency code is not supported. Supported currencies: " + java.util.Arrays.toString(CurrencyCodes.values()));
     }
   }
 
-  private static void validateAmount(Integer amount) {
-    if (amount == null) {
-      throw new IllegalArgumentException("Amount is required");
-    }
-
+  private static void validateAmount(int amount) {
     if (amount <= 0) {
       throw new IllegalArgumentException("Amount must be greater than 0");
     }

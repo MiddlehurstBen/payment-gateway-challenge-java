@@ -12,6 +12,7 @@ class RequestValidatorTest {
   @Test
   void whenCardNumberTooShortThenValidationFails() {
     PostPaymentRequest request = createValidRequest();
+
     request.setCardNumber("1234567890123"); // 13 digits
 
     IllegalArgumentException exception = assertThrows(
@@ -19,12 +20,13 @@ class RequestValidatorTest {
         () -> RequestValidator.validateRequest(request)
     );
     assertTrue(
-        exception.getMessage().contains("Card number must be between 14 and 19 digits long"));
+        exception.getMessage().contains("Card number must be at least 14 digits long and at most 19 digits long"));
   }
 
   @Test
   void whenCardNumberTooLongThenValidationFails() {
     PostPaymentRequest request = createValidRequest();
+
     request.setCardNumber("12345678901234567890"); // 20 digits
 
     IllegalArgumentException exception = assertThrows(
@@ -32,12 +34,13 @@ class RequestValidatorTest {
         () -> RequestValidator.validateRequest(request)
     );
     assertTrue(
-        exception.getMessage().contains("Card number must be between 14 and 19 digits long"));
+        exception.getMessage().contains("Card number must be at least 14 digits long and at most 19 digits long"));
   }
 
   @Test
   void whenExpiryMonthTooLowThenValidationFails() {
     PostPaymentRequest request = createValidRequest();
+
     request.setExpiryMonth(0);
 
     IllegalArgumentException exception = assertThrows(
@@ -51,6 +54,7 @@ class RequestValidatorTest {
   @Test
   void whenExpiryMonthTooHighThenValidationFails() {
     PostPaymentRequest request = createValidRequest();
+
     request.setExpiryMonth(13);
 
     IllegalArgumentException exception = assertThrows(
@@ -64,6 +68,7 @@ class RequestValidatorTest {
   @Test
   void whenExpiryDateInPastThenValidationFails() {
     PostPaymentRequest request = createValidRequest();
+
     request.setExpiryMonth(1);
     request.setExpiryYear(2020);
 
@@ -76,8 +81,10 @@ class RequestValidatorTest {
 
   @Test
   void whenExpiryDateIsNowThenValidationPasses() {
+
     PostPaymentRequest request = createValidRequest();
     java.time.YearMonth now = java.time.YearMonth.now();
+
     request.setExpiryMonth(now.getMonthValue());
     request.setExpiryYear(now.getYear());
 
@@ -87,7 +94,7 @@ class RequestValidatorTest {
   @Test
   void whenCurrencyInvalidThenValidationFails() {
     PostPaymentRequest request = createValidRequest();
-    request.setCurrency("XYZ");
+    request.setCurrency("AUD");
 
     IllegalArgumentException exception = assertThrows(
         IllegalArgumentException.class,
