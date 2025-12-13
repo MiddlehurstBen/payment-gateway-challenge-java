@@ -12,7 +12,7 @@ public class RequestValidator {
   public static void validateRequest(PostPaymentRequest request) {
     validateCardNumber(request.getCardNumber());
     validateExpiryDate(request.getExpiryMonth(), request.getExpiryYear());
-    validateCurrencyCode(request.getCurrencyCode());
+    validateCurrency(request.getCurrency());
     validateAmount(request.getAmount());
     validateCvv(request.getCvv());
   }
@@ -58,17 +58,17 @@ public class RequestValidator {
     }
   }
 
-  private static void validateCurrencyCode(String currencyCode) {
-    if (currencyCode == null || currencyCode.isEmpty()) {
+  private static void validateCurrency(String currency) {
+    if (currency == null || currency.isEmpty()) {
       throw new IllegalArgumentException("Currency is required");
     }
 
-    if (!currencyCode.matches("[A-Z]{3}")) {
+    if (!currency.matches("[A-Z]{3}")) {
       throw new IllegalArgumentException("Currency must be a 3-letter uppercase code");
     }
 
     try {
-      CurrencyCodes.valueOf(currencyCode);
+      CurrencyCodes.valueOf(currency);
     } catch (IllegalArgumentException e) {
       throw new IllegalArgumentException("Currency code is not supported. Supported currencies: " + java.util.Arrays.toString(CurrencyCodes.values()));
     }

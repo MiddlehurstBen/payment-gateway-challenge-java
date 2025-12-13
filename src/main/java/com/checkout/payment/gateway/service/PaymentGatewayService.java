@@ -64,7 +64,7 @@ public class PaymentGatewayService {
     bankRequest.setExpiryDate(paymentRequest.getExpiryMonth() + "/" + paymentRequest.getExpiryYear());
     bankRequest.setCvv(paymentRequest.getCvv());
     bankRequest.setAmount(paymentRequest.getAmount());
-    bankRequest.setCurrencyCode(paymentRequest.getCurrencyCode());
+    bankRequest.setCurrency(paymentRequest.getCurrency());
     return bankRequest;
   }
 
@@ -81,7 +81,7 @@ public class PaymentGatewayService {
     response.setStatus(bankResponse.isAuthorized() ? PaymentStatus.AUTHORIZED : PaymentStatus.DECLINED);
     response.setExpiryMonth(paymentRequest.getExpiryMonth());
     response.setExpiryYear(paymentRequest.getExpiryYear());
-    response.setCurrencyCode(paymentRequest.getCurrencyCode());
+    response.setCurrency(paymentRequest.getCurrency());
     response.setAmount(paymentRequest.getAmount());
     
     return response;

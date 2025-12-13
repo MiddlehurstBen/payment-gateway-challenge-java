@@ -11,6 +11,6 @@ public class PaymentResponse {
   private String cardNumberLastFour;
   private String expiryMonth;
   private String expiryYear;
-  private String currencyCode;
+  private String currency;
   private int amount;
 }

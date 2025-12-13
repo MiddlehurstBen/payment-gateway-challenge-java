@@ -66,7 +66,7 @@ class PaymentGatewayControllerTest {
     PaymentResponse payment = new PaymentResponse();
     payment.setId(UUID.randomUUID());
     payment.setAmount(10);
-    payment.setCurrencyCode("USD");
+    payment.setCurrency("USD");
     payment.setStatus(PaymentStatus.AUTHORIZED);
     payment.setExpiryMonth("12");
     payment.setExpiryYear("2024");
@@ -80,7 +80,7 @@ class PaymentGatewayControllerTest {
         .andExpect(jsonPath("$.cardNumberLastFour").value(payment.getCardNumberLastFour()))
         .andExpect(jsonPath("$.expiryMonth").value(payment.getExpiryMonth()))
         .andExpect(jsonPath("$.expiryYear").value(payment.getExpiryYear()))
-        .andExpect(jsonPath("$.currencyCode").value(payment.getCurrencyCode()))
+        .andExpect(jsonPath("$.currency").value(payment.getCurrency()))
         .andExpect(jsonPath("$.amount").value(payment.getAmount()));
   }
 
@@ -114,7 +114,7 @@ class PaymentGatewayControllerTest {
         .andExpect(jsonPath("$.cardNumberLastFour").value("8113"))
         .andExpect(jsonPath("$.expiryMonth").value("12"))
         .andExpect(jsonPath("$.expiryYear").value("2026"))
-        .andExpect(jsonPath("$.currencyCode").value("GBP"))
+        .andExpect(jsonPath("$.currency").value("GBP"))
         .andExpect(jsonPath("$.amount").value(100));
   }
 
@@ -140,7 +140,7 @@ class PaymentGatewayControllerTest {
         .andExpect(jsonPath("$.cardNumberLastFour").value("8114"))
         .andExpect(jsonPath("$.expiryMonth").value("12"))
         .andExpect(jsonPath("$.expiryYear").value("2026"))
-        .andExpect(jsonPath("$.currencyCode").value("USD"))
+        .andExpect(jsonPath("$.currency").value("USD"))
         .andExpect(jsonPath("$.amount").value(500));
   }
 

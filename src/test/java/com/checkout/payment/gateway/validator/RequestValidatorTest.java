@@ -94,7 +94,7 @@ class RequestValidatorTest {
   @Test
   void whenCurrencyInvalidThenValidationFails() {
     PostPaymentRequest request = createValidRequest();
-    request.setCurrencyCode("AUD");
+    request.setCurrency("AUD");
 
     IllegalArgumentException exception = assertThrows(
         IllegalArgumentException.class,
@@ -139,7 +139,7 @@ class RequestValidatorTest {
     request.setCardNumber("2222405343248113");
     request.setExpiryMonth("12");
     request.setExpiryYear("2026");
-    request.setCurrencyCode("GBP");
+    request.setCurrency("GBP");
     request.setAmount(100);
     request.setCvv("123");
     return request;

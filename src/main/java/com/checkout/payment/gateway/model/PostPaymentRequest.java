@@ -14,7 +14,7 @@ public class PostPaymentRequest implements Serializable {
   @JsonProperty(value = "expiry_year", required = true)
   private String expiryYear;
   @JsonProperty(value = "currency", required = true)
-  private String currencyCode;
+  private String currency;
   @JsonProperty(value = "amount", required = true)
   private Integer amount;
   @JsonProperty(value = "cvv", required = true)
