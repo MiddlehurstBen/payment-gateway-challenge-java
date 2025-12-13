@@ -13,32 +13,39 @@ public class CommonExceptionHandler {
 
   private static final Logger LOG = LoggerFactory.getLogger(CommonExceptionHandler.class);
 
-  @ExceptionHandler(EventProcessingException.class)
-  public ResponseEntity<ErrorResponse> handleException(EventProcessingException ex) {
-    LOG.error("Exception happened", ex);
-    
-    // Check if it's a bank service unavailable error (503)
-    if (ex.getMessage() != null && ex.getMessage().contains("Bank service unavailable")) {
-      return new ResponseEntity<>(new ErrorResponse(ex.getMessage()),
-          HttpStatus.SERVICE_UNAVAILABLE);
-    }
-    
-    // Check if it's a validation failure (400)
-    if (ex.getMessage() != null && 
-        (ex.getMessage().contains("Validation failed") ||
-         ex.getMessage().contains("Bank processing failed"))) {
-      return new ResponseEntity<>(new ErrorResponse(ex.getMessage()),
-          HttpStatus.BAD_REQUEST);
-    }
-    
-    // Not found (404)
-    return new ResponseEntity<>(new ErrorResponse("Page not found"),
+  @ExceptionHandler(BadRequestException.class)
+  public ResponseEntity<ErrorResponse> handleBadRequestException(BadRequestException ex) {
+    LOG.error("Bad Request: {}", ex.getMessage());
+    return new ResponseEntity<>(new ErrorResponse(ex.getMessage()),
+        HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(NotFoundException.class)
+  public ResponseEntity<ErrorResponse> handleNotFoundException(NotFoundException ex) {
+    LOG.error("Not Found: {}", ex.getMessage());
+    return new ResponseEntity<>(new ErrorResponse(ex.getMessage()),
         HttpStatus.NOT_FOUND);
   }
-  
+
+  @ExceptionHandler(InternalServerException.class)
+  public ResponseEntity<ErrorResponse> handleInternalServerException(InternalServerException ex) {
+    LOG.error("Internal Server Error: {}", ex.getMessage());
+    return new ResponseEntity<>(new ErrorResponse("An unexpected error occurred"),
+        HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+
+
+  @ExceptionHandler(ServiceUnavailableException.class)
+  public ResponseEntity<ErrorResponse> handleServiceUnavailableException(
+      ServiceUnavailableException ex) {
+    LOG.error("Service Unavailable: {}", ex.getMessage());
+    return new ResponseEntity<>(new ErrorResponse(ex.getMessage()),
+        HttpStatus.SERVICE_UNAVAILABLE);
+  }
+
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
-    LOG.error("Unexpected exception", ex);
+    LOG.error("Unexpected Exception: {}", ex.getMessage());
     return new ResponseEntity<>(new ErrorResponse("An unexpected error occurred"),
         HttpStatus.INTERNAL_SERVER_ERROR);
   }

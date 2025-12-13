@@ -42,6 +42,19 @@ This document outlines the key architectural and design decisions made during th
 
 ---
 
+## Bank Request
+
+### Decision: Direct Mapping of Payment Request to Bank Request
+
+**Approach:**
+- `BankRequest` class mirrors fields from `PaymentRequest` 
+-  Expiry Month and Year are set to Expiry Date in `BankRequest`
+
+**Reasoning:**
+- **Open For Future Changes**: If bank requirements change, mapping logic can be adjusted without affecting `PaymentRequest`
+
+---
+
 ## Bank Response
 
 ### Decision: Storing Authorization Code 
@@ -75,7 +88,7 @@ This document outlines the key architectural and design decisions made during th
 
 **Approach:**
 - `@ControllerAdvice` with `CommonExceptionHandler` catches all exceptions globally
-- Specific exception handlers for different error scenarios
+- Specific exception classes for different error scenarios
 - Generic exception handler as safety net
 
 **HTTP Status Code Mapping:**

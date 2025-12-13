@@ -1,4 +1,4 @@
-package com.checkout.payment.gateway.validation;
+package com.checkout.payment.gateway.validator;
 
 import com.checkout.payment.gateway.enums.CurrencyCodes;
 import com.checkout.payment.gateway.model.PostPaymentRequest;
@@ -11,8 +11,8 @@ public class RequestValidator {
 
   public static void validateRequest(PostPaymentRequest request) {
     validateCardNumber(request.getCardNumber());
-    validateExpiryDate(request.getExpiryDate());
-    validateCurrencyCode(request.getCurrency());
+    validateExpiryDate(request.getExpiryMonth(), request.getExpiryYear());
+    validateCurrencyCode(request.getCurrencyCode());
     validateAmount(request.getAmount());
     validateCvv(request.getCvv());
   }
@@ -31,8 +31,10 @@ public class RequestValidator {
     }
   }
 
-  private static void validateExpiryDate(String expiryDate) {
-    if (expiryDate == null) {
+  private static void validateExpiryDate(String expiryMonth, String expiryYear) {
+    String expiryDate = expiryMonth + "/" + expiryYear;
+
+    if (expiryDate.equals("/")) {
       throw new IllegalArgumentException("Expiry date is required");
     }
 
@@ -56,17 +58,17 @@ public class RequestValidator {
     }
   }
 
-  private static void validateCurrencyCode(String currency) {
-    if (currency == null || currency.isEmpty()) {
+  private static void validateCurrencyCode(String currencyCode) {
+    if (currencyCode == null || currencyCode.isEmpty()) {
       throw new IllegalArgumentException("Currency is required");
     }
 
-    if (!currency.matches("[A-Z]{3}")) {
+    if (!currencyCode.matches("[A-Z]{3}")) {
       throw new IllegalArgumentException("Currency must be a 3-letter uppercase code");
     }
 
     try {
-      CurrencyCodes.valueOf(currency);
+      CurrencyCodes.valueOf(currencyCode);
     } catch (IllegalArgumentException e) {
       throw new IllegalArgumentException("Currency code is not supported. Supported currencies: " + java.util.Arrays.toString(CurrencyCodes.values()));
     }

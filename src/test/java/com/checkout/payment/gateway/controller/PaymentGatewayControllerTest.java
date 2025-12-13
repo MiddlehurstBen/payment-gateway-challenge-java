@@ -7,9 +7,10 @@ import static org.hamcrest.Matchers.matchesPattern;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-import com.checkout.payment.gateway.bank.BankClient;
-import com.checkout.payment.gateway.bank.BankResponse;
+import com.checkout.payment.gateway.client.BankClient;
 import com.checkout.payment.gateway.enums.PaymentStatus;
+import com.checkout.payment.gateway.model.BankRequest;
+import com.checkout.payment.gateway.model.BankResponse;
 import com.checkout.payment.gateway.model.PaymentResponse;
 import com.checkout.payment.gateway.repository.PaymentsRepository;
 import java.util.UUID;
@@ -38,19 +39,17 @@ class PaymentGatewayControllerTest {
   @BeforeEach
   void setUp() {
     when(bankClient.processPayment(any())).thenAnswer(invocation -> {
-      var request = invocation.getArgument(0, com.checkout.payment.gateway.model.PostPaymentRequest.class);
+      var request = invocation.getArgument(0, BankRequest.class);
 
       String cardNumber = request.getCardNumber();
       int lastDigit = Character.getNumericValue(cardNumber.charAt(cardNumber.length() - 1));
       
-      BankResponse response = new BankResponse();
+      com.checkout.payment.gateway.model.BankResponse response = new BankResponse();
       
       if (lastDigit == 0) {
-
         response.setHttpStatusCode(503);
         response.setAuthorized(false);
       } else if (lastDigit % 2 == 1) {
-
         response.setHttpStatusCode(200);
         response.setAuthorized(true);
       } else {
@@ -67,11 +66,11 @@ class PaymentGatewayControllerTest {
     PaymentResponse payment = new PaymentResponse();
     payment.setId(UUID.randomUUID());
     payment.setAmount(10);
-    payment.setCurrency("USD");
+    payment.setCurrencyCode("USD");
     payment.setStatus(PaymentStatus.AUTHORIZED);
-    payment.setExpiryMonth(12);
-    payment.setExpiryYear(2024);
-    payment.setCardNumberLastFour(4321);
+    payment.setExpiryMonth("12");
+    payment.setExpiryYear("2024");
+    payment.setCardNumberLastFour("4321");
 
     paymentsRepository.add(payment);
 
@@ -81,7 +80,7 @@ class PaymentGatewayControllerTest {
         .andExpect(jsonPath("$.cardNumberLastFour").value(payment.getCardNumberLastFour()))
         .andExpect(jsonPath("$.expiryMonth").value(payment.getExpiryMonth()))
         .andExpect(jsonPath("$.expiryYear").value(payment.getExpiryYear()))
-        .andExpect(jsonPath("$.currency").value(payment.getCurrency()))
+        .andExpect(jsonPath("$.currencyCode").value(payment.getCurrencyCode()))
         .andExpect(jsonPath("$.amount").value(payment.getAmount()));
   }
 
@@ -89,7 +88,7 @@ class PaymentGatewayControllerTest {
   void whenPaymentWithIdDoesNotExistThen404IsReturned() throws Exception {
     mvc.perform(MockMvcRequestBuilders.get("/payment/" + UUID.randomUUID()))
         .andExpect(status().isNotFound())
-        .andExpect(jsonPath("$.message").value("Page not found"));
+        .andExpect(jsonPath("$.message").value(matchesPattern(".*No payment found for ID.*")));
   }
 
   @Test
@@ -97,11 +96,12 @@ class PaymentGatewayControllerTest {
     String validPaymentRequest = """
         {
           "card_number": 2222405343248113,
-          "expiry_month": 12,
-          "expiry_year": 2026,
+          "expiry_month":"2222405343248113",
+          "expiry_month": "12",
+          "expiry_year": "2026",
           "currency": "GBP",
           "amount": 100,
-          "cvv": 123
+          "cvv": "123"
         }
         """;
 
@@ -111,10 +111,10 @@ class PaymentGatewayControllerTest {
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.id").exists())
         .andExpect(jsonPath("$.status").value("Authorized"))
-        .andExpect(jsonPath("$.cardNumberLastFour").value(8113))
-        .andExpect(jsonPath("$.expiryMonth").value(12))
-        .andExpect(jsonPath("$.expiryYear").value(2026))
-        .andExpect(jsonPath("$.currency").value("GBP"))
+        .andExpect(jsonPath("$.cardNumberLastFour").value("8113"))
+        .andExpect(jsonPath("$.expiryMonth").value("12"))
+        .andExpect(jsonPath("$.expiryYear").value("2026"))
+        .andExpect(jsonPath("$.currencyCode").value("GBP"))
         .andExpect(jsonPath("$.amount").value(100));
   }
 
@@ -122,12 +122,12 @@ class PaymentGatewayControllerTest {
   void whenValidPaymentRequestWithEvenCardNumberThenDeclined() throws Exception {
     String validPaymentRequest = """
         {
-          "card_number": 2222405343248114,
-          "expiry_month": 12,
-          "expiry_year": 2026,
+          "card_number": "2222405343248114",
+          "expiry_month": "12",
+          "expiry_year": "2026",
           "currency": "USD",
           "amount": 500,
-          "cvv": 456
+          "cvv": "456"
         }
         """;
 
@@ -137,10 +137,10 @@ class PaymentGatewayControllerTest {
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.id").exists())
         .andExpect(jsonPath("$.status").value("Declined"))
-        .andExpect(jsonPath("$.cardNumberLastFour").value(8114))
-        .andExpect(jsonPath("$.expiryMonth").value(12))
-        .andExpect(jsonPath("$.expiryYear").value(2026))
-        .andExpect(jsonPath("$.currency").value("USD"))
+        .andExpect(jsonPath("$.cardNumberLastFour").value("8114"))
+        .andExpect(jsonPath("$.expiryMonth").value("12"))
+        .andExpect(jsonPath("$.expiryYear").value("2026"))
+        .andExpect(jsonPath("$.currencyCode").value("USD"))
         .andExpect(jsonPath("$.amount").value(500));
   }
 
@@ -148,12 +148,12 @@ class PaymentGatewayControllerTest {
   void whenInvalidCardNumberThenRejected() throws Exception {
     String invalidPaymentRequest = """
         {
-          "card_number": 123,
-          "expiry_month": 12,
-          "expiry_year": 2026,
+          "card_number": "123",
+          "expiry_month": "12",
+          "expiry_year": "2026",
           "currency": "GBP",
           "amount": 100,
-          "cvv": 123
+          "cvv": "123"
         }
         """;
 
@@ -168,12 +168,12 @@ class PaymentGatewayControllerTest {
   void whenInvalidExpiryDateThenRejected() throws Exception {
     String invalidPaymentRequest = """
         {
-          "card_number": 2222405343248113,
-          "expiry_month": 1,
-          "expiry_year": 2020,
+          "card_number": "2222405343248113",
+          "expiry_month": "01",
+          "expiry_year": "2020",
           "currency": "GBP",
           "amount": 100,
-          "cvv": 123
+          "cvv": "123"
         }
         """;
 
@@ -188,12 +188,12 @@ class PaymentGatewayControllerTest {
   void whenInvalidCurrencyThenRejected() throws Exception {
     String invalidPaymentRequest = """
         {
-          "card_number": 2222405343248113,
-          "expiry_month": 12,
-          "expiry_year": 2026,
+          "card_number": "2222405343248113",
+          "expiry_month": "12",
+          "expiry_year": "2026",
           "currency": "XYZ",
           "amount": 100,
-          "cvv": 123
+          "cvv": "123"
         }
         """;
 
@@ -208,12 +208,12 @@ class PaymentGatewayControllerTest {
   void whenInvalidCvvThenRejected() throws Exception {
     String invalidPaymentRequest = """
         {
-          "card_number": 2222405343248113,
-          "expiry_month": 12,
-          "expiry_year": 2026,
+          "card_number": "2222405343248113",
+          "expiry_month": "12",
+          "expiry_year": "2026",
           "currency": "GBP",
           "amount": 100,
-          "cvv": 12
+          "cvv": "12"
         }
         """;
 
@@ -228,12 +228,12 @@ class PaymentGatewayControllerTest {
   void whenBankReturns503ThenErrorThrown() throws Exception {
     String paymentRequestWithCardEndingInZero = """
         {
-          "card_number": 2222405343248110,
-          "expiry_month": 12,
-          "expiry_year": 2026,
+          "card_number": "2222405343248110",
+          "expiry_month": "12",
+          "expiry_year": "2026",
           "currency": "EUR",
           "amount": 250,
-          "cvv": 789
+          "cvv": "789"
         }
         """;
 
