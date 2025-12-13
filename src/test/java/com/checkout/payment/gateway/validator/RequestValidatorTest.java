@@ -1,4 +1,4 @@
-package com.checkout.payment.gateway.validation;
+package com.checkout.payment.gateway.validator;
 
 import com.checkout.payment.gateway.model.PostPaymentRequest;
 import org.junit.jupiter.api.Test;
@@ -41,7 +41,7 @@ class RequestValidatorTest {
   void whenExpiryMonthTooLowThenValidationFails() {
     PostPaymentRequest request = createValidRequest();
 
-    request.setExpiryMonth(0);
+    request.setExpiryMonth("0");
 
     IllegalArgumentException exception = assertThrows(
         IllegalArgumentException.class,
@@ -55,7 +55,7 @@ class RequestValidatorTest {
   void whenExpiryMonthTooHighThenValidationFails() {
     PostPaymentRequest request = createValidRequest();
 
-    request.setExpiryMonth(13);
+    request.setExpiryMonth("13");
 
     IllegalArgumentException exception = assertThrows(
         IllegalArgumentException.class,
@@ -69,8 +69,8 @@ class RequestValidatorTest {
   void whenExpiryDateInPastThenValidationFails() {
     PostPaymentRequest request = createValidRequest();
 
-    request.setExpiryMonth(1);
-    request.setExpiryYear(2020);
+    request.setExpiryMonth("01");
+    request.setExpiryYear("2020");
 
     IllegalArgumentException exception = assertThrows(
         IllegalArgumentException.class,
@@ -85,8 +85,8 @@ class RequestValidatorTest {
     PostPaymentRequest request = createValidRequest();
     java.time.YearMonth now = java.time.YearMonth.now();
 
-    request.setExpiryMonth(now.getMonthValue());
-    request.setExpiryYear(now.getYear());
+    request.setExpiryMonth(String.valueOf(now.getMonthValue()));
+    request.setExpiryYear(String.valueOf(now.getYear()));
 
     assertDoesNotThrow(() -> RequestValidator.validateRequest(request));
   }
@@ -137,8 +137,8 @@ class RequestValidatorTest {
   private PostPaymentRequest createValidRequest() {
     PostPaymentRequest request = new PostPaymentRequest();
     request.setCardNumber("2222405343248113");
-    request.setExpiryMonth(12);
-    request.setExpiryYear(2026);
+    request.setExpiryMonth("12");
+    request.setExpiryYear("2026");
     request.setCurrency("GBP");
     request.setAmount(100);
     request.setCvv("123");

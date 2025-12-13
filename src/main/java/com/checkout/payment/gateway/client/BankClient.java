@@ -1,5 +1,7 @@
-package com.checkout.payment.gateway.bank;
+package com.checkout.payment.gateway.client;
 
+import com.checkout.payment.gateway.model.BankRequest;
+import com.checkout.payment.gateway.model.BankResponse;
 import com.checkout.payment.gateway.model.PostPaymentRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,12 +28,12 @@ public class BankClient {
     this.bankUrl = bankUrl;
   }
 
-  public BankResponse processPayment(PostPaymentRequest request) {
+  public BankResponse processPayment(BankRequest request) {
     String url = bankUrl + PAYMENTS;
 
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
-    HttpEntity<PostPaymentRequest> entity = new HttpEntity<>(request, headers);
+    HttpEntity<BankRequest> entity = new HttpEntity<>(request, headers);
 
     LOG.info("Calling bank simulator at: {}", url);
 

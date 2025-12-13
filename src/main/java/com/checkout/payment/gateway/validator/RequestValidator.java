@@ -1,4 +1,4 @@
-package com.checkout.payment.gateway.validation;
+package com.checkout.payment.gateway.validator;
 
 import com.checkout.payment.gateway.enums.CurrencyCodes;
 import com.checkout.payment.gateway.model.PostPaymentRequest;
@@ -11,8 +11,8 @@ public class RequestValidator {
 
   public static void validateRequest(PostPaymentRequest request) {
     validateCardNumber(request.getCardNumber());
-    validateExpiryDate(request.getExpiryDate());
-    validateCurrencyCode(request.getCurrency());
+    validateExpiryDate(request.getExpiryMonth(), request.getExpiryYear());
+    validateCurrency(request.getCurrency());
     validateAmount(request.getAmount());
     validateCvv(request.getCvv());
   }
@@ -31,8 +31,10 @@ public class RequestValidator {
     }
   }
 
-  private static void validateExpiryDate(String expiryDate) {
-    if (expiryDate == null) {
+  private static void validateExpiryDate(String expiryMonth, String expiryYear) {
+    String expiryDate = expiryMonth + "/" + expiryYear;
+
+    if (expiryDate.equals("/")) {
       throw new IllegalArgumentException("Expiry date is required");
     }
 
@@ -56,7 +58,7 @@ public class RequestValidator {
     }
   }
 
-  private static void validateCurrencyCode(String currency) {
+  private static void validateCurrency(String currency) {
     if (currency == null || currency.isEmpty()) {
       throw new IllegalArgumentException("Currency is required");
     }
